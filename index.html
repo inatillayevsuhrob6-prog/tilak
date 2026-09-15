@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robiya Opa Uchun | Maxsus Tabrik</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Great+Vibes&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #4a4a4a;
+            --primary: #d48ba3; /* Pushti */
+            --secondary: #8a4b5f; /* To'q bordo */
+            --accent: #ffb7c5;
+            --glass: rgba(255, 255, 255, 0.85);
+            --shadow: 0 15px 40px rgba(138, 75, 95, 0.15);
+            --font-serif: 'Cormorant Garamond', serif;
+            --font-sans: 'Montserrat', sans-serif;
+            --font-script: 'Great Vibes', cursive;
+            --transition: all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        /* Dark Mode Variables */
+        body.dark-mode {
+            --bg-color: #1a1025;
+            --text-color: #e0d0e5;
+            --primary: #b06c7e;
+            --secondary: #d48ba3;
+            --accent: #4a2c5a;
+            --glass: rgba(30, 20, 40, 0.85);
+            --shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-sans);
+            overflow-x: hidden;
+            transition: background-color 0.8s ease, color 0.8s ease;
+            cursor: default;
+        }
+
+        /* --- Mouse Glow Effect --- */
+        .mouse-glow {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(212, 139, 163, 0.12) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 9998;
+            transition: opacity 0.3s;
+        }
+        body.dark-mode .mouse-glow {
+            background: radial-gradient(circle, rgba(176, 108, 126, 0.2) 0%, transparent 70%);
+        }
+
+        /* --- Canvas for Particles & Blooms --- */
+        #effects-canvas {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* --- Envelope Intro --- */
+        #intro-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100vh;
+            background: var(--bg-color);
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            transition: opacity 1s ease, visibility 1s ease;
+        }
+        #intro-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+        .envelope-wrapper {
+            position: relative;
+            width: 320px;
+            height: 220px;
+            cursor: pointer;
+            perspective: 1000px;
+            transform-style: preserve-3d;
+        }
+
+        .envelope {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: #fdf0f3;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            z-index: 2;
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
+        }
+        
+        .envelope::before { /* Bottom flap */
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; width: 100%; height: 100%;
+            background: #f5dce3;
+            clip-path: polygon(0 100%, 50% 45%, 100% 100%);
+            border-radius: 0 0 12px 12px;
+            z-index: 3;
+        }
+
+        .envelope::after { /* Side flaps */
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #fae6eb;
+            clip-path: polygon(0 0, 50% 50%, 100% 0, 100% 100%, 0 100%);
+            z-index: 2;
+        }
+
+        .envelope-flap {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #fdf0f3;
+            clip-path: polygon(0 0, 100% 0, 50% 55%);
+            transform-origin: top;
+            backface-visibility: hidden;
+            transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1), z-index 0.2s 0.5s;
+            z-index: 4;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .letter {
+            position: absolute;
+            top: 18px; left: 10px; right: 10px; bottom: 10px;
+            background: white;
+            padding: 20px;
+            text-align: center;
+            font-family: var(--font-script);
+            font-size: 1.6rem;
+            color: var(--secondary);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transform: translateY(20px);
+            transition: transform 0.9s 0.78s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .envelope-wrapper.open .envelope-flap {
+            transform: rotateX(180deg);
+            z-index: 0;
+        }
+        .envelope-wrapper.open .letter {
+            transform: translateY(-140px) scale(1.1);
+            z-index: 5;
+        }
+        .envelope-wrapper.returning .envelope-flap {
+            transform: rotateX(0deg);
+            z-index: 4;
+        }
+        .envelope-wrapper.returning .letter {
+            transform: translateY(20px) scale(1);
+            z-index: 1;
+        }
+        .letter p {
+            opacity: 0;
+            transform: translateY(12px);
+            transition: opacity 0.7s ease 0.8s, transform 0.7s ease 0.8s;
+        }
+        .envelope-wrapper.open .letter p {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .envelope-wrapper.returning .letter p {
+            opacity: 0;
+            transform: translateY(12px);
+            transition-delay: 0s;
+        }
+
+        .tap-hint {
+            margin-top: 50px;
+            font-family: var(--font-serif);
+            color: var(--secondary);
+            font-size: 1.2rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+        /* --- Main Content Layout --- */
+        #main-content {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1.5s ease 1s;
+            position: relative;
+            z-index: 2;
+            padding-bottom: 100px;
+        }
+        #main-content.visible { opacity: 1; visibility: visible; }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+        section { padding: 80px 0; }
+
+        h1, h2, h3 { font-family: var(--font-serif); color: var(--secondary); }
+        .script-font { font-family: var(--font-script); }
+
+        /* Hero Section - Pastroq va Markazda */
+        .hero { 
+            min-height: 86vh; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; /* Vertikal markaz */
+            align-items: center; 
+            text-align: center; 
+            padding-top: 150px;
+            padding-bottom: 70px;
+        }
+        
+        .hero-title-container {
+            font-size: 7rem; /* Katta shrift */
+            margin-bottom: 30px;
+            min-height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--secondary);
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 4px;
+            height: 1em;
+            background-color: var(--secondary);
+            margin-left: 10px;
+            animation: blink 1s step-end infinite;
+            vertical-align: middle;
+            height: 90px;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .hero-sub { 
+            font-size: 1.6rem; 
+            color: var(--primary); 
+            font-style: italic; 
+            margin-bottom: 30px; 
+            max-width: 700px;
+            line-height: 1.6;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 1s ease;
+        }
+
+        /* For You Section */
+        .for-you-section {
+            text-align: center;
+            padding: 60px 0;
+            background: linear-gradient(to bottom, transparent, rgba(212, 139, 163, 0.05), transparent);
+        }
+        .for-you-title { font-size: 3rem; margin-bottom: 20px; }
+        .for-you-text { font-size: 1.2rem; max-width: 800px; margin: 0 auto; line-height: 1.8; color: var(--text-color); }
+
+        .heart-wish {
+            position: relative;
+            text-align: center;
+            padding: 58px 20px;
+            background: linear-gradient(135deg, rgba(255, 241, 245, 0.85), rgba(255, 255, 255, 0.8));
+            border-top: 1px solid rgba(212, 139, 163, 0.12);
+            border-bottom: 1px solid rgba(212, 139, 163, 0.12);
+        }
+        .heart-wish::before { content: '♡'; display: block; color: var(--primary); font-size: 2rem; margin-bottom: 12px; }
+        .heart-wish p { max-width: 760px; margin: 0 auto; color: var(--secondary); font-family: var(--font-serif); font-size: 2rem; font-style: italic; line-height: 1.35; }
+
+        /* Wishes Grid */
+        .wishes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 40px; }
+        .wish-card {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 40px 30px;
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: var(--transition);
+            opacity: 0; transform: translateY(40px);
+        }
+        .wish-card:hover { transform: translateY(-10px); background: rgba(255,255,255,0.95); }
+        .wish-icon { font-size: 3rem; margin-bottom: 20px; display: block; }
+        .wish-title { font-size: 1.8rem; margin-bottom: 15px; }
+        .wish-text { font-size: 1.05rem; line-height: 1.7; }
+
+        /* Interactive Wish Button - Markazda */
+        .interactive-wish { text-align: center; margin: 80px auto; }
+        .wish-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white; border: none; padding: 18px 50px; font-size: 1.2rem;
+            border-radius: 50px; cursor: pointer; font-family: var(--font-sans);
+            letter-spacing: 1px; box-shadow: 0 10px 25px rgba(138, 75, 95, 0.3);
+            transition: all 0.3s ease;
+        }
+        .wish-btn:hover { transform: scale(1.05); box-shadow: 0 15px 35px rgba(138, 75, 95, 0.4); }
+        .random-wish-display {
+            margin-top: 40px; font-family: var(--font-serif); font-size: 1.8rem;
+            color: var(--secondary); font-style: italic; min-height: 60px;
+            opacity: 0; transition: opacity 0.5s;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .wish-games { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; margin: 30px auto 90px; max-width: 940px; }
+        .wish-game { padding: 34px 28px; text-align: center; background: linear-gradient(145deg, rgba(255,255,255,0.9), rgba(255,241,245,0.7)); border: 1px solid rgba(212,139,163,0.18); border-radius: 22px; box-shadow: var(--shadow); }
+        .wish-game-icon { display: block; font-size: 2.5rem; margin-bottom: 12px; }
+        .wish-game h3 { font-size: 2rem; margin-bottom: 10px; }
+        .wish-game p { min-height: 48px; line-height: 1.6; margin-bottom: 20px; }
+        .balloon-field { position: fixed; inset: 0; overflow: visible; pointer-events: none; z-index: 200; }
+        .wish-balloon { position: absolute; width: 112px; min-height: 140px; padding: 30px 12px 18px; border-radius: 50% 50% 46% 46%; color: white; font-family: var(--font-serif); font-size: 1.05rem; line-height: 1.2; text-align: center; pointer-events: auto; cursor: pointer; z-index: 201; box-shadow: inset -10px -12px 18px rgba(0,0,0,0.1), 0 8px 18px rgba(138,75,95,0.18); will-change: left, top, transform; }
+        .wish-balloon::before { content: ''; position: absolute; left: 50%; bottom: -42px; width: 1px; height: 46px; background: rgba(138,75,95,0.45); }
+        .wish-balloon::after { content: ''; position: absolute; left: calc(50% - 5px); bottom: -3px; border: 5px solid transparent; border-top-color: currentColor; }
+        .wish-balloon.popping { animation: balloon-pop 0.45s ease-out forwards; pointer-events: none; }
+        @keyframes balloon-pop { 0% { transform: scale(1); opacity: 1; } 45% { transform: scale(1.3); opacity: 1; } 100% { transform: scale(0.05); opacity: 0; } }
+        .pop-bird { position: fixed; z-index: 220; font-size: 2.2rem; pointer-events: none; animation: bird-fly 1.8s ease-out forwards; }
+        @keyframes bird-fly { 0% { transform: translate(0, 0) scale(0.65); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(120px, -180px) scale(1.1); opacity: 0; } }
+        .puzzle-pieces { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 300px; margin: 0 auto 20px; }
+        .puzzle-piece { min-height: 72px; border: 1px solid rgba(138,75,95,0.15); border-radius: 12px; background: rgba(255,255,255,0.78); color: var(--secondary); font-family: var(--font-serif); font-size: 1rem; cursor: pointer; transition: transform 0.25s ease, opacity 0.25s ease, background 0.25s ease; }
+        .puzzle-piece:hover { transform: translateY(-4px); background: #fff; }
+        .puzzle-piece.collected { opacity: 0.38; transform: scale(0.92); pointer-events: none; }
+        .puzzle-result { min-height: 76px; color: var(--secondary); font-family: var(--font-serif); font-size: 1.55rem; font-style: italic; line-height: 1.35; opacity: 0; transition: opacity 0.6s ease; }
+        .puzzle-result.visible { opacity: 1; }
+
+        /* Polaroid Gallery */
+        .gallery-section { text-align: center; padding: 80px 0; }
+        .gallery-title { font-size: 3.5rem; margin-bottom: 50px; }
+        .polaroid-grid {
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 50px;
+        }
+        .polaroid {
+            background: white; padding: 15px 15px 60px 15px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+            width: 300px; transition: var(--transition); position: relative; cursor: pointer;
+        }
+        .polaroid:nth-child(odd) { transform: rotate(-4deg); }
+        .polaroid:nth-child(even) { transform: rotate(3deg); }
+        .polaroid:hover { transform: rotate(0) scale(1.1) !important; z-index: 10; box-shadow: 0 25px 50px rgba(0,0,0,0.25); }
+        
+        .polaroid-img { width: 100%; height: 320px; object-fit: cover; background: #eee; filter: sepia(10%); }
+        .polaroid-caption {
+            position: absolute; bottom: 20px; left: 0; width: 100%;
+            text-align: center; font-family: var(--font-script);
+            font-size: 2rem; color: #333;
+        }
+
+        /* Big Piano Section - Ko'proq klavishlar */
+        .piano-section { text-align: center; padding: 80px 0; background: rgba(212, 139, 163, 0.03); }
+        .piano-title { font-size: 2.5rem; margin-bottom: 40px; }
+        .piano-keys {
+            display: flex; justify-content: center; gap: 6px; margin-top: 40px;
+            user-select: none;
+            padding: 0 20px;
+        }
+        .key {
+            width: 50px; height: 200px; background: white; border: 1px solid #ddd;
+            border-radius: 0 0 8px 8px; cursor: pointer; position: relative;
+            transition: all 0.1s; box-shadow: 0 8px 10px rgba(0,0,0,0.1);
+            z-index: 1; flex-shrink: 0;
+        }
+        .key.black {
+            width: 36px; height: 120px; background: #222; 
+            margin-left: -21px; margin-right: -21px;
+            z-index: 2; border-radius: 0 0 5px 5px; border: none;
+            box-shadow: 0 5px 8px rgba(0,0,0,0.3);
+        }
+        .key:active, .key.active {
+            transform: translateY(4px) scale(0.98); 
+            background: #f8f8f8; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .key.black:active, .key.black.active { background: #000; }
+
+        /* Final Section */
+        .final-section { text-align: center; padding: 100px 0 50px; }
+        .final-title { font-size: 3.2rem; margin-bottom: 25px; }
+        .final-text { font-size: 1.3rem; margin-bottom: 60px; max-width: 800px; margin-left: auto; margin-right: auto; line-height: 1.8; }
+        .final-signature { font-family: var(--font-script); font-size: 3rem; color: var(--primary); }
+
+        /* Marquee */
+        .marquee-container {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: var(--glass); backdrop-filter: blur(8px);
+            border-top: 1px solid rgba(0,0,0,0.05);
+            padding: 18px 0; z-index: 100; overflow: hidden;
+        }
+        .marquee-content {
+            display: inline-block; white-space: nowrap;
+            animation: marquee 40s linear infinite;
+            font-family: var(--font-serif); font-size: 1.3rem; color: var(--secondary); letter-spacing: 2px;
+        }
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed; top: 30px; right: 30px; z-index: 1000;
+            background: var(--glass); border: 1px solid rgba(0,0,0,0.1);
+            padding: 12px 24px; border-radius: 40px; cursor: pointer; 
+            font-family: var(--font-sans); font-weight: 500;
+            box-shadow: var(--shadow); display: flex; align-items: center; gap: 10px;
+            transition: var(--transition); color: var(--text-color);
+        }
+        .theme-toggle:hover { transform: scale(1.05); background: white; }
+
+        .music-toggle {
+            position: fixed; top: 30px; left: 30px; z-index: 1000;
+            width: 48px; height: 48px; border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 50%; cursor: pointer; background: var(--glass);
+            box-shadow: var(--shadow); color: var(--secondary); font-size: 1.2rem;
+            transition: var(--transition);
+        }
+        .music-toggle:hover { transform: scale(1.08); }
+
+        /* Utility */
+        .reveal-on-scroll { opacity: 0; transform: translateY(40px); transition: all 0.9s ease; }
+        .reveal-on-scroll.active { opacity: 1; transform: translateY(0); }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .theme-toggle { top: 18px; right: 18px; padding: 10px 14px; font-size: 0.75rem; }
+            .music-toggle { top: 18px; left: 18px; }
+            .hero-title-container { font-size: 4.5rem; min-height: 90px; }
+            .cursor { height: 60px; }
+            .heart-wish p { font-size: 1.55rem; }
+            .wish-games { grid-template-columns: 1fr; margin-bottom: 60px; }
+            .polaroid { width: 240px; }
+            .polaroid-img { height: 240px; }
+            .key { width: 35px; height: 140px; }
+            .key.black { width: 24px; height: 80px; margin-left: -15px; margin-right: -15px; }
+            .for-you-title, .gallery-title, .final-title { font-size: 2.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Effects Canvas -->
+    <canvas id="effects-canvas"></canvas>
+    <div class="mouse-glow" id="mouse-glow"></div>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" id="themeBtn">🌙 Tun rejimi</button>
+    <button class="music-toggle" id="musicBtn" aria-label="Musiqani yoqish yoki o‘chirish" title="Musiqa">♫</button>
+    <audio id="backgroundMusic" src="music.mp3" loop preload="metadata"></audio>
+
+    <!-- Envelope Intro -->
+    <div id="intro-screen">
+        <div class="envelope-wrapper" id="envelope">
+            <div class="envelope">
+                <div class="envelope-flap"></div>
+                <div class="letter">
+                    <span style="font-size: 2.5rem;"></span>
+                    <p style="margin-top:15px;">Robiya opa uchun...</p>
+                </div>
+            </div>
+        </div>
+        <p class="tap-hint">Konvertni ochish uchun bosing</p>
+    </div>
+
+    <!-- Main Content -->
+    <div id="main-content">
+        
+        <!-- Hero -->
+        <section class="hero">
+            <div class="container">
+                <div class="hero-title-container">
+                    <h1 class="hero-title script-font" id="typing-text"></h1><span class="cursor"></span>
+                </div>
+                <p class="hero-sub" id="hero-sub">Siz uchun eng samimiy tilaklar...</p>
+                <p class="hero-sub" style="font-size: 1.2rem; color: var(--text-color); font-style: normal;" id="hero-desc">
+                    Har bir kuningiz quvonchli, qalbingiz xotirjam va yo‘lingiz doimo yorug‘ bo‘lsin.
+                </p>
+            </div>
+        </section>
+
+        <!-- For You Section -->
+        <section class="for-you-section">
+            <div class="container reveal-on-scroll">
+                <h2 class="for-you-title script-font">Robiya opa, bu tilaklar Siz uchun.</h2>
+                <p class="for-you-text">
+                    Hayotingizdagi har bir yangi sahifa oldingisidan ham chiroyli bo‘lsin. 
+                    Sizga doimo yaxshi insonlar, go‘zal kunlar, quvonchli xabarlar va qalbingizga yaqin baxtli lahzalar hamroh bo‘lsin.
+                </p>
+            </div>
+        </section>
+
+        <section class="heart-wish reveal-on-scroll">
+            <p>Har tongingiz umid bilan, har kechangiz xotirjamlik bilan to‘lsin. Qalbingizdagi eng chiroyli orzularingiz birin-ketin ushalaversin.</p>
+        </section>
+
+        <!-- Wishes Grid -->
+        <section id="wishes">
+            <div class="container">
+                <div class="wishes-grid">
+                    <div class="wish-card reveal-on-scroll">
+                        <span class="wish-icon">✨</span>
+                        <h3 class="wish-title">Xotirjamlik</h3>
+                        <p class="wish-text">Qalbingiz doimo tinch, ko‘nglingiz keng va hayotingiz barakali bo‘lsin.</p>
+                    </div>
+                    <div class="wish-card reveal-on-scroll">
+                        <span class="wish-icon">🌸</span>
+                        <h3 class="wish-title">Go‘zallik</h3>
+                        <p class="wish-text">Atrofingizdagi har bir narsa sizga ilhom va quvonch bag‘ishlasin.</p>
+                    </div>
+                    <div class="wish-card reveal-on-scroll">
+                        <span class="wish-icon">🕊️</span>
+                        <h3 class="wish-title">Omad</h3>
+                        <p class="wish-text">Barcha ezgu niyatlaringiz o‘z vaqtida va eng chiroyli shaklda amalga oshsin.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Wish - Markazda -->
+        <div class="container interactive-wish reveal-on-scroll">
+            <button class="wish-btn" id="newWishBtn">Yana bir tilak ✨</button>
+            <div class="random-wish-display" id="randomWishDisplay"></div>
+        </div>
+
+        <section class="wish-games container reveal-on-scroll">
+            <article class="wish-game">
+                <span class="wish-game-icon">🎈</span>
+                <h3>Tilaklar osmonga</h3>
+                <p>Bir tilak yozib, uni osmonga uchiring.</p>
+                <button class="wish-btn" id="balloonBtn">Tilakni uchirish</button>
+                <div class="balloon-field" id="balloonField"></div>
+            </article>
+            <article class="wish-game">
+                <span class="wish-game-icon">🧩</span>
+                <h3>Tilakni yig‘ing</h3>
+                <p>Barcha bo‘laklarni bosing va katta tilakni oching.</p>
+                <div class="puzzle-pieces" id="puzzlePieces">
+                    <button class="puzzle-piece">Qalbingizga</button>
+                    <button class="puzzle-piece">doimo</button>
+                    <button class="puzzle-piece">quvonch</button>
+                    <button class="puzzle-piece">va mehr</button>
+                    <button class="puzzle-piece">hamroh</button>
+                    <button class="puzzle-piece">bo‘lsin.</button>
+                </div>
+                <div class="puzzle-result" id="puzzleResult"></div>
+            </article>
+        </section>
+
+        <!-- Polaroid Gallery -->
+        <section class="gallery-section">
+            <div class="container">
+                <h2 class="gallery-title script-font reveal-on-scroll">Chiroyli Lahzalar</h2>
+                <div class="polaroid-grid">
+                    <div class="polaroid reveal-on-scroll">
+                        <img src="img.jpg" class="polaroid-img" alt="Go‘zal xotira">
+                        <div class="polaroid-caption">Tabassum</div>
+                    </div>
+                    <div class="polaroid reveal-on-scroll">
+                        <img src="img1.jpg" class="polaroid-img" alt="Gullar bilan go‘zal lahza">
+                        <div class="polaroid-caption">Baxt lahzasi</div>
+                    </div>
+                    <div class="polaroid reveal-on-scroll">
+                        <img src="img2.jpg" class="polaroid-img" alt="Yodgorlik surat">
+                        <div class="polaroid-caption">Yodgorlik</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Big Piano Section - Ko'proq klavishlar -->
+        <section class="piano-section">
+            <div class="container">
+                <h2 class="piano-title script-font reveal-on-scroll">Keling, birorta kuylaymiz...</h2>
+                <div class="piano-keys reveal-on-scroll" id="piano">
+                    <!-- Oktava 1 -->
+                    <div class="key" data-note="C4"></div>
+                    <div class="key black" data-note="C#4"></div>
+                    <div class="key" data-note="D4"></div>
+                    <div class="key black" data-note="D#4"></div>
+                    <div class="key" data-note="E4"></div>
+                    <div class="key" data-note="F4"></div>
+                    <div class="key black" data-note="F#4"></div>
+                    <div class="key" data-note="G4"></div>
+                    <div class="key black" data-note="G#4"></div>
+                    <div class="key" data-note="A4"></div>
+                    <div class="key black" data-note="A#4"></div>
+                    <div class="key" data-note="B4"></div>
+                    <!-- Oktava 2 -->
+                    <div class="key" data-note="C5"></div>
+                    <div class="key black" data-note="C#5"></div>
+                    <div class="key" data-note="D5"></div>
+                    <div class="key black" data-note="D#5"></div>
+                    <div class="key" data-note="E5"></div>
+                    <div class="key" data-note="F5"></div>
+                    <div class="key black" data-note="F#5"></div>
+                    <div class="key" data-note="G5"></div>
+                    <div class="key black" data-note="G#5"></div>
+                    <div class="key" data-note="A5"></div>
+                    <div class="key black" data-note="A#5"></div>
+                    <div class="key" data-note="B5"></div>
+                    <div class="key" data-note="C6"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Final Section -->
+        <section class="final-section">
+            <div class="container reveal-on-scroll">
+                <h2 class="final-title script-font">Robiya opa, Sizga doimo eng go‘zal kunlar nasib etsin.</h2>
+                <p class="final-text">
+                    Tabassumingiz ko‘payib, tashvishlaringiz kamayib, har bir kuningiz yaxshi xotiralarga aylansin.
+                </p>
+                <p class="final-signature">Eng samimiy tilaklar bilan Mr.Suhrobbek ✨</p>
+            </div>
+        </section>
+
+        <!-- Spacer for Marquee -->
+        <div style="height: 80px;"></div>
+    </div>
+
+    <!-- Marquee -->
+    <div class="marquee-container">
+        <div class="marquee-content">
+            ✨ Baxt • Hurmat • Xotirjamlik • Robiya Opa • Mehr • Yengillik • Go‘zallik • Tabassum • Orzular • Sevgi • Do‘stlik •  Baxt • Hurmat • Xotirjamlik • Robiya Opa • Mehr • Yengillik • Go‘zallik • Tabassum • Orzular • Sevgi • Do‘stlik •
+        </div>
+    </div>
+
+    <script>
+        // --- Audio Context for Piano ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+        const musicBtn = document.getElementById('musicBtn');
+        const backgroundMusic = document.getElementById('backgroundMusic');
+
+        const notes = {
+            "C4": 261.63, "C#4": 277.18, "D4": 293.66, "D#4": 311.13,
+            "E4": 329.63, "F4": 349.23, "F#4": 369.99, "G4": 392.00,
+            "G#4": 415.30, "A4": 440.00, "A#4": 466.16, "B4": 493.88, 
+            "C5": 523.25, "C#5": 554.37, "D5": 587.33, "D#5": 622.25,
+            "E5": 659.25, "F5": 698.46, "F#5": 739.99, "G5": 783.99,
+            "G#5": 830.61, "A5": 880.00, "A#5": 932.33, "B5": 987.77, "C6": 1046.50
+        };
+
+        function playTone(freq) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.type = 'triangle'; // More piano-like than sine
+            osc.frequency.value = freq;
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            osc.start();
+            gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 2);
+            osc.stop(audioCtx.currentTime + 2);
+        }
+
+        function toggleMusic() {
+            if (!backgroundMusic.src) return;
+            if (backgroundMusic.paused) {
+                backgroundMusic.play();
+                musicBtn.textContent = '♫';
+            } else {
+                backgroundMusic.pause();
+                musicBtn.textContent = '♪';
+            }
+        }
+
+        musicBtn.addEventListener('click', toggleMusic);
+
+        document.querySelectorAll('.key').forEach(key => {
+            key.addEventListener('mousedown', () => {
+                key.classList.add('active');
+                playTone(notes[key.dataset.note]);
+            });
+            key.addEventListener('mouseup', () => key.classList.remove('active'));
+            key.addEventListener('mouseleave', () => key.classList.remove('active'));
+            
+            // Touch support for mobile
+            key.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                key.classList.add('active');
+                playTone(notes[key.dataset.note]);
+            });
+            key.addEventListener('touchend', () => key.classList.remove('active'));
+        });
+
+        // --- Envelope Logic & Confetti ---
+        const envelope = document.getElementById('envelope');
+        const introScreen = document.getElementById('intro-screen');
+        const mainContent = document.getElementById('main-content');
+        const canvas = document.getElementById('effects-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let blooms = [];
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        envelope.addEventListener('click', () => {
+            if (!envelope.classList.contains('open')) {
+                // 1. Konvertni ochish
+                envelope.classList.add('open');
+                
+                // 2. Gullar sochilishi
+                fireConfetti();
+                
+                // 3. Xat ko‘ringach, uni sekin konvert ichiga qaytarish
+                setTimeout(() => {
+                    envelope.classList.add('returning');
+                }, 2600);
+
+                // 4. Asosiy sahifaga o'tish va yozishni boshlash
+                setTimeout(() => {
+                    introScreen.classList.add('hidden');
+                    mainContent.classList.add('visible');
+                    
+                    // Typing effektini boshlash
+                    typeWriter("Robiya opa", 0);
+                    
+                    // Subtitrlarni ko'rsatish
+                    setTimeout(() => {
+                        document.getElementById('hero-sub').classList.add('active');
+                        document.getElementById('hero-desc').classList.add('active');
+                    }, 1000);
+                }, 3800);
+            }
+        });
+
+        function fireConfetti() {
+            for(let i=0; i<150; i++) {
+                particles.push({
+                    x: window.innerWidth / 2, y: window.innerHeight / 2,
+                    vx: (Math.random() - 0.5) * 20, vy: (Math.random() - 0.5) * 20,
+                    size: Math.random() * 10 + 5,
+                    color: ['#d48ba3', '#8a4b5f', '#ffb7c5', '#fff', '#e0d0e5'][Math.floor(Math.random()*5)],
+                    life: 150, gravity: 0.2
+                });
+            }
+        }
+
+        // --- Click-to-Bloom ---
+        document.addEventListener('click', (e) => {
+            if (introScreen.classList.contains('hidden') && e.target.closest('.key') === null && e.target.id !== 'newWishBtn') {
+                blooms.push({
+                    x: e.clientX, y: e.clientY,
+                    size: 0, maxSize: Math.random() * 30 + 20,
+                    growth: 1.5, opacity: 1,
+                    color: `hsl(${Math.random()*60 + 300}, 70%, 80%)`,
+                    rotation: Math.random() * 360
+                });
+            }
+        });
+
+        // --- Animation Loop ---
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Confetti
+            particles.forEach((p, index) => {
+                p.x += p.vx; p.y += p.vy; p.vy += p.gravity; p.life--;
+                p.vx *= 0.96; // Air resistance
+                ctx.fillStyle = p.color;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+                if(p.life <= 0) particles.splice(index, 1);
+            });
+
+            // Blooms
+            blooms.forEach((b, index) => {
+                if(b.size < b.maxSize) b.size += b.growth;
+                else b.opacity -= 0.015;
+                
+                ctx.save();
+                ctx.translate(b.x, b.y);
+                ctx.rotate(b.rotation * Math.PI / 180);
+                ctx.globalAlpha = b.opacity;
+                ctx.fillStyle = b.color;
+                
+                // Draw flower petals
+                for(let i=0; i<6; i++) {
+                    ctx.beginPath();
+                    ctx.arc(Math.cos(i * Math.PI / 3) * b.size/2.5, Math.sin(i * Math.PI / 3) * b.size/2.5, b.size/3, 0, Math.PI*2);
+                    ctx.fill();
+                }
+                // Center
+                ctx.fillStyle = '#fff';
+                ctx.beginPath(); ctx.arc(0, 0, b.size/5, 0, Math.PI*2); ctx.fill();
+                
+                ctx.restore();
+                
+                if(b.opacity <= 0) blooms.splice(index, 1);
+            });
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // --- Typing Effect ---
+        function typeWriter(text, i) {
+            if (i < text.length) {
+                document.getElementById("typing-text").innerHTML += text.charAt(i);
+                setTimeout(() => typeWriter(text, i + 1), 120);
+            }
+        }
+
+        // --- Random Wish Generator ---
+        const wishes = [
+            "Har bir kuningiz kichik quvonchlarga boy bo‘lsin.",
+            "Ko‘nglingizni xira qiladigan narsalar uzoqda qolsin.",
+            "Orzularingiz siz kutganingizdan ham chiroyli amalga oshsin.",
+            "Har bir qilgan yaxshiligingiz o‘zingizga yaxshilik bo‘lib qaytsin.",
+            "Qalbingizdagi xotirjamlik hech qachon yo‘qolmasin.",
+            "Yuzingizdan tabassum, qalbingizdan nur hech qachon arimasin."
+        ];
+        const wishBtn = document.getElementById('newWishBtn');
+        const wishDisplay = document.getElementById('randomWishDisplay');
+        wishBtn.addEventListener('click', () => {
+            wishDisplay.style.opacity = '0';
+            setTimeout(() => {
+                wishDisplay.textContent = `"${wishes[Math.floor(Math.random() * wishes.length)]}"`;
+                wishDisplay.style.opacity = '1';
+            }, 400);
+        });
+        wishDisplay.textContent = `"${wishes[0]}"`;
+        wishDisplay.style.opacity = '1';
+
+        // --- Wish Balloons ---
+        const balloonBtn = document.getElementById('balloonBtn');
+        const balloonField = document.getElementById('balloonField');
+        const balloonWishes = [
+            'Baxtingiz baland bo‘lsin!',
+            'Har kuningiz nurga to‘lsin!',
+            'Orzularingiz ushalaversin!',
+            'Tabassumingiz arimasin!'
+        ];
+        const activeBalloons = new Set();
+        const gameCards = [...document.querySelectorAll('.wish-game')];
+        let lastBalloonFrame = performance.now();
+
+        function animateBalloons(now) {
+            const elapsed = Math.min((now - lastBalloonFrame) / 16.67, 2);
+            lastBalloonFrame = now;
+            activeBalloons.forEach(balloonState => {
+                if (balloonState.popped) return;
+                balloonState.x += balloonState.vx * elapsed;
+                balloonState.y += balloonState.vy * elapsed;
+
+                if (balloonState.escaping) {
+                    balloonState.vy -= 0.015 * elapsed;
+                    if (balloonState.y <= 20) {
+                        balloonState.escaping = false;
+                        balloonState.y = 20;
+                        balloonState.vx = (Math.random() < 0.5 ? -1 : 1) * (3.2 + Math.random() * 2);
+                        balloonState.vy = 2.5 + Math.random() * 2;
+                    }
+                } else {
+                    if (balloonState.x <= 0 || balloonState.x + balloonState.width >= window.innerWidth) {
+                        balloonState.vx *= -1;
+                        balloonState.x = Math.max(0, Math.min(balloonState.x, window.innerWidth - balloonState.width));
+                    }
+                    if (balloonState.y <= 10 || balloonState.y + balloonState.height >= window.innerHeight - 70) {
+                        balloonState.vy *= -1;
+                        balloonState.y = Math.max(10, Math.min(balloonState.y, window.innerHeight - 70 - balloonState.height));
+                    }
+
+                    gameCards.forEach(card => {
+                        const cardRect = card.getBoundingClientRect();
+                        const overlapsCard = balloonState.x < cardRect.right &&
+                            balloonState.x + balloonState.width > cardRect.left &&
+                            balloonState.y < cardRect.bottom &&
+                            balloonState.y + balloonState.height > cardRect.top;
+                        if (!overlapsCard) return;
+
+                        const balloonCenterX = balloonState.x + balloonState.width / 2;
+                        const balloonCenterY = balloonState.y + balloonState.height / 2;
+                        const cardCenterX = cardRect.left + cardRect.width / 2;
+                        const cardCenterY = cardRect.top + cardRect.height / 2;
+                        if (Math.abs(balloonCenterX - cardCenterX) > Math.abs(balloonCenterY - cardCenterY)) {
+                            if (balloonCenterX < cardCenterX) {
+                                balloonState.x = cardRect.left - balloonState.width - 2;
+                                balloonState.vx = -Math.abs(balloonState.vx);
+                            } else {
+                                balloonState.x = cardRect.right + 2;
+                                balloonState.vx = Math.abs(balloonState.vx);
+                            }
+                        } else if (balloonCenterY < cardCenterY) {
+                            balloonState.y = cardRect.top - balloonState.height - 2;
+                            balloonState.vy = -Math.abs(balloonState.vy);
+                        } else {
+                            balloonState.y = cardRect.bottom + 2;
+                            balloonState.vy = Math.abs(balloonState.vy);
+                        }
+                    });
+                }
+                balloonState.element.style.left = `${balloonState.x}px`;
+                balloonState.element.style.top = `${balloonState.y}px`;
+                balloonState.element.style.transform = `rotate(${balloonState.vx * 1.5}deg)`;
+            });
+            requestAnimationFrame(animateBalloons);
+        }
+        requestAnimationFrame(animateBalloons);
+
+        function playPopSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const oscillator = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(520, audioCtx.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(95, audioCtx.currentTime + 0.16);
+            gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.18);
+            oscillator.connect(gain).connect(audioCtx.destination);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.2);
+        }
+        balloonBtn.addEventListener('click', () => {
+            const balloon = document.createElement('div');
+            balloon.className = 'wish-balloon';
+            balloon.textContent = balloonWishes[Math.floor(Math.random() * balloonWishes.length)];
+            const launchArea = balloonBtn.closest('.wish-game').getBoundingClientRect();
+            const width = 112;
+            const height = 140;
+            const startX = launchArea.left + 20 + Math.random() * Math.max(1, launchArea.width - width - 40);
+            const startY = launchArea.top + launchArea.height - height - 24;
+            balloon.style.background = ['#d48ba3', '#8a4b5f', '#e9a6b9', '#b98198'][Math.floor(Math.random() * 4)];
+            balloon.style.left = `${startX}px`;
+            balloon.style.top = `${startY}px`;
+            balloonField.appendChild(balloon);
+            const balloonState = {
+                element: balloon,
+                x: startX,
+                y: startY,
+                width,
+                height,
+                vx: (Math.random() - 0.5) * 2.4,
+                vy: -(2.2 + Math.random() * 1.5),
+                escaping: true,
+                popped: false
+            };
+            activeBalloons.add(balloonState);
+            balloon.addEventListener('click', (event) => {
+                event.stopPropagation();
+                balloonState.popped = true;
+                activeBalloons.delete(balloonState);
+                playPopSound();
+                const position = balloon.getBoundingClientRect();
+                const bird = document.createElement('span');
+                bird.className = 'pop-bird';
+                bird.textContent = '🕊️';
+                bird.style.left = `${position.left + position.width / 2}px`;
+                bird.style.top = `${position.top + position.height / 2}px`;
+                document.body.appendChild(bird);
+                balloon.classList.add('popping');
+                setTimeout(() => balloon.remove(), 450);
+                setTimeout(() => bird.remove(), 1800);
+            });
+        });
+
+        // --- Wish Puzzle ---
+        const puzzlePieces = [...document.querySelectorAll('.puzzle-piece')];
+        const puzzleResult = document.getElementById('puzzleResult');
+        let collectedPieces = 0;
+        puzzlePieces.forEach(piece => {
+            piece.addEventListener('click', () => {
+                piece.classList.add('collected');
+                collectedPieces++;
+                if (collectedPieces === puzzlePieces.length) {
+                    puzzleResult.textContent = '“Robiya opa, qalbingizga doimo quvonch va mehr hamroh bo‘lsin.”';
+                    puzzleResult.classList.add('visible');
+                }
+            });
+        });
+
+        // --- Scroll Reveal ---
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if(entry.isIntersecting) entry.target.classList.add('active');
+            });
+        }, {threshold: 0.1});
+        document.querySelectorAll('.reveal-on-scroll').forEach(el => observer.observe(el));
+
+        // --- Mouse Glow ---
+        const glow = document.getElementById('mouse-glow');
+        document.addEventListener('mousemove', (e) => {
+            glow.style.left = e.clientX + 'px';
+            glow.style.top = e.clientY + 'px';
+        });
+
+        // --- Theme Toggle ---
+        const themeBtn = document.getElementById('themeBtn');
+        themeBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            themeBtn.textContent = document.body.classList.contains('dark-mode') ? '☀️ Kun rejimi' : '🌙 Tun rejimi';
+        });
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
